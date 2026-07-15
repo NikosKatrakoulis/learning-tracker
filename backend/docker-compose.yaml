@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-local
+    environment:
+      POSTGRES_USER: nikoskatrakoulis
+      POSTGRES_PASSWORD: BuildingMyFuture26@
+      POSTGRES_DB: learning_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
