@@ -5,8 +5,8 @@ services:
     image: postgres:16
     container_name: postgres-local
     environment:
-      POSTGRES_USER: nikoskatrakoulis
-      POSTGRES_PASSWORD: BuildingMyFuture26@
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
       POSTGRES_DB: learning_tracker
     ports:
       - "5432:5432"
