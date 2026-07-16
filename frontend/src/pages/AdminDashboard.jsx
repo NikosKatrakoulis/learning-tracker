@@ -385,14 +385,14 @@ const AdminDashboard = () => {
       <h2 style={{ color: '#0f172a', marginBottom: '20px', fontSize: '22px' }}>Admin Dashboard</h2>
 
       {/* Tab bar */}
-      <div style={{ display: 'flex', gap: '4px', borderBottom: '2px solid #e2e8f0', marginBottom: '28px' }}>
+      <div style={{ display: 'flex', borderBottom: '2px solid #e2e8f0', marginBottom: '28px' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => { setActiveTab(t.id); setMode('add'); if (t.id === 'feedback') fetchAllFeedbacks(courses) }} style={{
-            padding: '10px 20px', border: 'none', background: 'none', cursor: 'pointer',
+            flex: 1, padding: '12px 0', border: 'none', background: 'none', cursor: 'pointer',
             fontSize: '14px', fontWeight: activeTab === t.id ? '700' : '400',
             color: activeTab === t.id ? '#1d4ed8' : '#64748b',
             borderBottom: activeTab === t.id ? '2px solid #1d4ed8' : '2px solid transparent',
-            marginBottom: '-2px', transition: 'all 0.15s ease',
+            marginBottom: '-2px', transition: 'all 0.15s ease', textAlign: 'center',
           }}>
             {t.label}
           </button>
@@ -404,7 +404,7 @@ const AdminDashboard = () => {
 
       {/* ── Users tab ── */}
       {activeTab === 'users' && (
-        <div style={{ maxWidth: '520px' }}>
+        <div style={{ maxWidth: '520px', margin: '0 auto' }}>
           <ModeToggle current={mode} onChange={setMode} />
           {mode === 'add' ? (
             <div style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
@@ -450,7 +450,7 @@ const AdminDashboard = () => {
 
       {/* ── Courses tab ── */}
       {activeTab === 'courses' && (
-        <div style={{ maxWidth: '520px' }}>
+        <div style={{ maxWidth: '520px', margin: '0 auto' }}>
           <ModeToggle current={mode} onChange={setMode} />
           {mode === 'add' ? (
             <div style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
@@ -484,7 +484,7 @@ const AdminDashboard = () => {
 
       {/* ── Lessons tab ── */}
       {activeTab === 'lessons' && (
-        <div>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <ModeToggle current={mode} onChange={setMode} />
           {mode === 'add' ? (
             <>
@@ -730,7 +730,7 @@ const AdminDashboard = () => {
 
       {/* ── Assignments tab ── */}
       {activeTab === 'assignments' && (
-        <div style={{ maxWidth: '520px' }}>
+        <div style={{ maxWidth: '520px', margin: '0 auto' }}>
           <ModeToggle current={mode} onChange={setMode} />
           {mode === 'add' ? (
             <div style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
@@ -777,7 +777,7 @@ const AdminDashboard = () => {
 
       {/* ── Feedback tab ── */}
       {activeTab === 'feedback' && (
-        <div style={{ maxWidth: '720px' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           {courses.length === 0 && <EmptyState icon="💬" text="No courses found." />}
           {courses.map(course => {
             const fbs = courseFeedbacks[course.id] || []
@@ -854,7 +854,7 @@ const AdminDashboard = () => {
 
       {/* ── Reports tab ── */}
       {activeTab === 'reports' && (
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', maxWidth: '1000px', margin: '0 auto' }}>
           <div style={{ width: '260px', flexShrink: 0 }}>
             <h3 style={{ margin: '0 0 14px', fontSize: '13px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Employees</h3>
             {employees.length === 0 && <EmptyState icon="👤" text="No employees found." />}

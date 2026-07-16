@@ -379,6 +379,7 @@ const UserDashboard = ({ userId }) => {
 
   return (
     <div style={{ padding: '24px', fontFamily: 'system-ui, sans-serif' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
       <h2 style={{ marginBottom: '20px', color: '#0f172a', fontSize: '22px' }}>Your Courses</h2>
       <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
 
@@ -543,6 +544,7 @@ const UserDashboard = ({ userId }) => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   )

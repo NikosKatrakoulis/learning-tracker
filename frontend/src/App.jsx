@@ -8,7 +8,7 @@ import Login from './pages/Login'
 
 axios.interceptors.request.use(
   config => {
-    const user = JSON.parse(localStorage.getItem('user'))
+    const user = JSON.parse(sessionStorage.getItem('user'))
     if (user?.accessToken) config.headers.Authorization = `Bearer ${user.accessToken}`
     return config
   },
@@ -125,18 +125,18 @@ function App() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('user')
+    const saved = sessionStorage.getItem('user')
     if (saved) setUser(JSON.parse(saved))
   }, [])
 
   const handleLogin = (userData) => {
     setUser(userData)
-    localStorage.setItem('user', JSON.stringify(userData))
+    sessionStorage.setItem('user', JSON.stringify(userData))
   }
 
   const handleLogout = () => {
     setUser(null)
-    localStorage.removeItem('user')
+    sessionStorage.removeItem('user')
   }
 
   return (
