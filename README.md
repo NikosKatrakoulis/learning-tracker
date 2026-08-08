@@ -427,8 +427,7 @@ Contributions are welcome! To contribute:
 
 ## 📄 License
 
-This project currently has no license file. Consider adding one (e.g. [MIT](https://choosealicense.com/licenses/mit/)) to clarify how others can use this project.
-
+This project is licensed under the [MIT License](LICENSE).
 ---
 
 ## 👤 Author
