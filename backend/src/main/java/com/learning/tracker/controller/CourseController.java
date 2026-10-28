@@ -18,6 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * CRUD for courses and their units (lessons and quizzes), plus PDF upload/download.
+ * Εvery method delegates to LearningService.
+ */
+
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
@@ -50,6 +55,7 @@ public class CourseController {
         return learningService.createQuizUnit(courseId, req);
     }
 
+    // The response includes correctOption, so the answer key is visible to any authenticated client.
     @GetMapping("/units/{unitId}/quiz")
     public List<QuizQuestionDto> getQuiz(@PathVariable Long unitId) {
         return learningService.getQuizForUnit(unitId);
@@ -68,7 +74,6 @@ public class CourseController {
                     .body(new ByteArrayResource(unit.getPdfData()));
         }
 
-        // Fallback: classpath (legacy seeded files)
         if (unit.getPdfPath() != null) {
             Resource resource = new ClassPathResource("lessons/" + unit.getPdfPath());
             return ResponseEntity.ok()
@@ -86,6 +91,7 @@ public class CourseController {
         return ResponseEntity.ok(dto);
     }
 
+    // Deletes dependent rows manually in the service (progress, quiz data, assignments, units).
     @DeleteMapping("/{courseId}")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId) {
         learningService.deleteCourse(courseId);

@@ -23,6 +23,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+/**
+ * Central Spring Security setup: stateless JWT authentication, CORS policy and password hashing.
+ * Every HTTP request passes through the filter chain
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -31,11 +35,14 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
 
+    // Shared by LearningService (hashing on create/update) and DaoAuthenticationProvider (verification on login).
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Verifies username/password by loading the user through CustomUserDetailsService
+    // and comparing the BCrypt hash.
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -44,6 +51,7 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    // Exposed as a bean so AuthController can call authenticate() directly during login.
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
@@ -53,19 +61,23 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
+            // CSRF protection targets cookie/session auth
             .csrf(AbstractHttpConfigurer::disable)
+            // No HttpSession is created: every request must carry its own JWT.
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/webjars/**").permitAll()
                 .anyRequest().authenticated()
             )
+            // Any unauthenticated access ends up here
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
                     System.out.println("[DEBUG_LOG] Unauthorized access at: " + request.getRequestURI());
                     response.sendError(401, "Unauthorized");
                 })
             )
+            // The JWT filter must run first so the SecurityContext is populated before authorization is evaluated.
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

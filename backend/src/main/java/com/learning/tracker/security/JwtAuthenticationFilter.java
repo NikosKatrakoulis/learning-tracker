@@ -16,6 +16,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Runs once per request. If a valid "Authorization: Bearer ..." token is present, it authenticates the
+ * request by placing the user in the SecurityContext. It never rejects a request itself: requests without
+ * authentication simply continue and are refused later by the authorization rules in SecurityConfig.
+ */
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -31,7 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromToken(jwt);
-                
+
+                // Hits the database on every authenticated request, so a deleted user is rejected immediately
+                // and role changes take effect without waiting for the token to expire.
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
@@ -40,6 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
+            // Any failure leaves the request unauthenticated
             System.out.println("[DEBUG_LOG] JWT Filter Error: " + ex.getMessage());
         }
 

@@ -10,6 +10,7 @@ import java.util.List;
 public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, Long> {
     List<QuizQuestion> findByUnitIdOrderByOrderIndex(Long unitId);
 
+    // Bulk JPQL deletes; call only after the questions' options are gone
     @Modifying
     @Query("DELETE FROM QuizQuestion q WHERE q.unit.id = :unitId")
     void deleteByUnitId(Long unitId);

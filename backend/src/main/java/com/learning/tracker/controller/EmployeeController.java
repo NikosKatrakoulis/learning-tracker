@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Read-only admin views over employees (users with role "USER").
+ */
+
 @RestController
 @RequestMapping("/api/employees")
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ public class EmployeeController {
         return learningService.getAllEmployees();
     }
 
+    // Returns an untyped map: employee info plus per-course total/completed/remaining unit counts.
     @GetMapping("/{userId}/report")
     public Map<String, Object> getEmployeeReport(@PathVariable Long userId) {
         return learningService.getEmployeeReport(userId);

@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface QuizOptionRepository extends JpaRepository<QuizOption, Long> {
+
+    // Bulk JPQL deletes: run as a single SQL DELETE (Hibernate resolves the path to joins/subqueries)
+    // and bypass the persistence context. They must run before the questions/units are deleted.
     @Modifying
     @Query("DELETE FROM QuizOption o WHERE o.question.unit.id = :unitId")
     void deleteByQuestionUnitId(Long unitId);

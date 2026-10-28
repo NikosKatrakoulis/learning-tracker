@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Public login endpoint (/api/auth/** is permitAll in SecurityConfig).
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -28,6 +31,8 @@ public class AuthController {
         String password = credentials.get("password");
         
         try {
+            // Delegates to DaoAuthenticationProvider: loads the user and checks the BCrypt hash.
+            // Throws AuthenticationException on bad credentials.
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );
@@ -35,6 +40,7 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
 
+            // Second lookup only to obtain id/role/fullName for the response
             User user = userRepository.findByUsername(username).orElseThrow();
             
             return ResponseEntity.ok(Map.of(
@@ -45,6 +51,7 @@ public class AuthController {
                 "fullName", user.getFullName()
             ));
         } catch (org.springframework.security.core.AuthenticationException e) {
+            // Same message for unknown user and wrong password, so the response does not reveal which usernames exist.
             return ResponseEntity.status(401).body(Map.of("message", "Invalid username or password"));
         }
     }

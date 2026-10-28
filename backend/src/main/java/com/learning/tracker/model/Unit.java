@@ -12,6 +12,8 @@ public class Unit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // EAGER: the parent course is loaded with every unit load. @JsonIgnore avoids the
+    // Course -> units -> course loop when a Unit is serialized directly.
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course_id", nullable = false)
     @JsonIgnore
@@ -33,6 +35,7 @@ public class Unit {
     @Column(name = "pdf_path")
     private String pdfPath;
 
+    // PDF stored directly in the database
     @Column(name = "pdf_data", columnDefinition = "BYTEA")
     private byte[] pdfData;
 

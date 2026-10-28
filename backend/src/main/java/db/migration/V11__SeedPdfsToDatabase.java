@@ -14,6 +14,7 @@ public class V11__SeedPdfsToDatabase extends BaseJavaMigration {
     public void migrate(Context context) throws Exception {
         var conn = context.getConnection();
 
+        // Only units that still have a path but no stored bytes.
         ResultSet rs = conn.createStatement().executeQuery(
                 "SELECT id, pdf_path FROM units WHERE pdf_path IS NOT NULL AND pdf_data IS NULL");
 
@@ -23,6 +24,7 @@ public class V11__SeedPdfsToDatabase extends BaseJavaMigration {
 
             InputStream stream = getClass().getClassLoader()
                     .getResourceAsStream("lessons/" + pdfPath);
+            // File missing from the classpath: skip it and keep pdf_path so the legacy fallback still applies.
             if (stream == null) continue;
 
             byte[] data = stream.readAllBytes();

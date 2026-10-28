@@ -12,6 +12,7 @@ public class UserUnitProgress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Both EAGER: loading progress also loads the Unit, whose own EAGER course is loaded too.
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

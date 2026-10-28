@@ -15,6 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Single service holding all business logic (courses, units, quizzes, users, progress, feedback, PDFs).
+ * Write operations are @Transactional so multi-step changes either fully apply or roll back.
+ * Several delete operations remove child rows manually instead of relying on JPA cascades.
+ */
+
 @Service
 @RequiredArgsConstructor
 public class LearningService {
@@ -70,6 +76,8 @@ public class LearningService {
         return unitMapper.toDto(unitRepository.save(unit));
     }
 
+    // Builds the quiz unit, its questions and their options in one transaction.
+    // Each question/option is saved explicitly rather than through the entity cascade.
     @Transactional
     public UnitDto createQuizUnit(Long courseId, CreateQuizUnitRequest req) {
         Course course = courseRepository.findById(courseId).orElseThrow();
@@ -133,6 +141,8 @@ public class LearningService {
     @Transactional
     public void deleteCourse(Long courseId) {
         progressRepository.deleteByUnitCourseId(courseId);
+        // Loads every quiz result in the table and filters in memory because QuizResultRepository
+        // has no delete-by-course query.
         quizResultRepository.deleteAll(quizResultRepository.findAll().stream()
                 .filter(r -> r.getUnit().getCourse().getId().equals(courseId)).toList());
         quizOptionRepository.deleteByQuestionUnitCourseId(courseId);
@@ -142,6 +152,7 @@ public class LearningService {
         courseRepository.deleteById(courseId);
     }
 
+    // Same ordering as deleteCourse, scoped to a single unit (feedback is per course, so not involved).
     @Transactional
     public void deleteUnit(Long unitId) {
         progressRepository.deleteByUnitId(unitId);
@@ -154,6 +165,7 @@ public class LearningService {
 
     // ── Users ────────────────────────────────────────────────────────────────
 
+    // Never stores the raw password: it is BCrypt-hashed before saving.
     @Transactional
     public UserDto createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -163,6 +175,7 @@ public class LearningService {
     @Transactional
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
         User user = userRepository.findById(userId).orElseThrow();
+        // matches() compares the raw input against the stored BCrypt hash.
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new RuntimeException("Invalid old password");
         }
@@ -170,6 +183,7 @@ public class LearningService {
         userRepository.save(user);
     }
 
+    // Feedback is not deleted here: course_feedback.user_id has ON DELETE CASCADE at the database level.
     @Transactional
     public void deleteUser(Long userId) {
         progressRepository.deleteByUserId(userId);
@@ -236,6 +250,7 @@ public class LearningService {
         );
     }
 
+    // Idempotent: does nothing if the user already has the course.
     @Transactional
     public void assignCourseToUser(Long userId, Long courseId) {
         User user = userRepository.findById(userId).orElseThrow();
@@ -258,6 +273,8 @@ public class LearningService {
 
     // ── Quiz results ─────────────────────────────────────────────────────────
 
+    // Every attempt is stored as a new row
+    // Values come from the client
     @Transactional
     public void saveQuizResult(Long userId, Long unitId, SaveQuizResultRequest req) {
         User user = userRepository.findById(userId).orElseThrow();
@@ -273,6 +290,7 @@ public class LearningService {
         quizResultRepository.save(result);
     }
 
+    // Groups all of the user's attempts by quiz unit and reduces each group to one summary row.
     public List<QuizAttemptSummaryDto> getQuizSummariesForUser(Long userId) {
         List<QuizResult> results = quizResultRepository.findByUserIdOrderByAttemptedAtDesc(userId);
         Map<Long, List<QuizResult>> byUnit = results.stream()
@@ -299,10 +317,12 @@ public class LearningService {
 
     // ── Employees ────────────────────────────────────────────────────────────
 
+    // "Employees" are all users whose role is exactly "USER" (admin is excluded).
     public List<UserDto> getAllEmployees() {
         return userMapper.toDtoList(userRepository.findByRole("USER"));
     }
 
+    // Builds an untyped report: per assigned course, total / completed / remaining unit counts.
     public Map<String, Object> getEmployeeReport(Long userId) {
         User user = userRepository.findById(userId).orElseThrow();
         List<UserUnitProgress> progressList = progressRepository.findByUserId(userId);
@@ -335,6 +355,7 @@ public class LearningService {
 
     // ── PDF storage ──────────────────────────────────────────────────────────
 
+    // Stores the PDF bytes in the units.pdf_data column
     @Transactional
     public UnitDto storePdf(Long unitId, byte[] data, String fileName) {
         Unit unit = unitRepository.findById(unitId).orElseThrow();
